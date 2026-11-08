@@ -1,0 +1,26 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0d0c0b"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500&family=Noto+Serif+Thai:wght@400;500&display=swap" rel="stylesheet"><link rel="stylesheet" href="assets/style.css"><title>รายละเอียดสินค้า</title></head>
+<body class="hasbar"><div id="hdr"></div>
+<main class="wrap" id="main"><div class="state">กำลังโหลด...</div></main><div id="ftr"></div>
+<script src="assets/app.js"></script>
+<script>
+loadData().then(({products,settings:s})=>{
+ chrome(s,"c");
+ const id=new URLSearchParams(location.search).get("id");
+ const p=products.find(x=>x.id===id);
+ if(!p){$("#main").innerHTML='<div class="state">ไม่พบสินค้านี้<br><br><a class="btn" href="collection.html">กลับไปคอลเลกชัน</a></div>';return;}
+ document.title=p.name+" · "+p.type;
+ const out=p.stock<=0, oh="order.html?id="+encodeURIComponent(p.id);
+ const imgs=p.images.map(i=>IMG_DIR+i);
+ const btn=out?'<span class="btn off">หมดชั่วคราว</span>':'<a class="btn solid" href="'+oh+'">สั่งซื้อด้ามนี้</a>';
+ $("#main").innerHTML='<div class="crumb"><a href="collection.html">คอลเลกชัน</a> / '+esc(p.name)+'</div><div class="pd fade"><div class="gal"><img id="big" src="'+esc(imgs[0]||"")+'" alt="'+esc(p.name)+'">'+
+  (imgs.length>1?'<div class="thumbs">'+imgs.map((u,i)=>'<img src="'+esc(u)+'" class="'+(i?"":"on")+'" alt="">').join("")+'</div>':"")+'</div><div>'+
+  '<h1>'+esc(p.name)+'</h1><div class="tp">'+esc(p.type)+'</div><div class="pr serif">'+baht(p.price)+(out?' <small style="color:#e8a595;font-size:.9rem">· หมดชั่วคราว</small>':'')+'</div>'+
+  '<p class="desc">'+esc(p.description)+'</p>'+
+  '<div class="box"><small>เหมาะกับ</small><span>'+esc(p.for_whom)+'</span></div>'+
+  '<div class="box"><small>ช่วงเวลาของด้ามนี้</small><span>'+esc(p.scene)+'</span></div>'+
+  '<ul class="feat">'+p.features.map(f=>'<li>'+esc(f)+'</li>').join("")+'</ul>'+
+  '<div id="cta">'+btn+'</div><p class="hint" style="margin-top:14px">'+esc(s.shipping_note||"")+'</p></div></div>'+
+  '<div class="stickybar"><span class="serif" style="color:var(--gold2)">'+esc(p.name)+' · '+baht(p.price)+'</span>'+btn+'</div>';
+ document.querySelectorAll(".thumbs img").forEach(t=>t.onclick=()=>{$("#big").src=t.src;document.querySelectorAll(".thumbs img").forEach(x=>x.classList.toggle("on",x===t));});
+}).catch(e=>fail($("#main"),e));
+</script></body></html>

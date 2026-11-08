@@ -1,0 +1,8 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0d0c0b"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500&family=Noto+Serif+Thai:wght@400;500&display=swap" rel="stylesheet"><link rel="stylesheet" href="assets/style.css"><title>คอลเลกชัน</title></head>
+<body><div id="hdr"></div>
+<main><section><div class="wrap"><div class="sec-h"><h2>คอลเลกชัน</h2><p>เลือกด้ามที่ใช่สำหรับคุณ หรือสำหรับคนที่คุณอยากมอบให้</p><div class="rule"></div></div>
+<div class="grid" id="grid"><div class="state">กำลังโหลด...</div></div></div></section></main><div id="ftr"></div>
+<script src="assets/app.js"></script>
+<script>
+loadData().then(({products,settings:s})=>{chrome(s,"c");$("#grid").innerHTML=products.map(card).join("")||'<div class="state">ยังไม่มีสินค้า</div>';}).catch(e=>fail($("#grid"),e));
+</script></body></html>

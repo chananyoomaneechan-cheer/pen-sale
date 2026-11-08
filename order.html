@@ -1,0 +1,61 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0d0c0b"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500&family=Noto+Serif+Thai:wght@400;500&display=swap" rel="stylesheet"><link rel="stylesheet" href="assets/style.css"><title>สั่งซื้อ / ติดต่อ</title></head>
+<body><div id="hdr"></div>
+<main><section><div class="wrap"><div class="sec-h"><h2>สั่งซื้อ / ติดต่อ</h2><p>กรอกฟอร์มด้านล่าง ทีมงานจะติดต่อกลับเพื่อยืนยันออเดอร์</p><div class="rule"></div></div>
+<div class="contact" id="contact"></div>
+<form class="fm" id="f" novalidate>
+<label class="req" for="pid">สินค้า</label><select id="pid"></select>
+<div id="colorBox" hidden><label for="color">สีของเซ็ต</label><select id="color"><option>ดำ</option><option>เขียวเข้ม</option><option>น้ำเงินเข้ม</option></select></div>
+<label class="req" for="qty">จำนวน</label><input id="qty" type="number" min="1" max="20" value="1" inputmode="numeric">
+<label class="req" for="nm">ชื่อผู้รับ</label><input id="nm" autocomplete="name" maxlength="100">
+<label class="req" for="tel">เบอร์โทรศัพท์</label><input id="tel" type="tel" inputmode="tel" autocomplete="tel" maxlength="20" placeholder="08X-XXX-XXXX">
+<label class="req" for="addr">ที่อยู่จัดส่ง</label><textarea id="addr" autocomplete="street-address" maxlength="500"></textarea>
+<div id="engBox"><label for="eng">ชื่อที่ต้องการแกะ (ถ้ามี)</label><input id="eng" maxlength="40"><div class="hint" id="engHint"></div></div>
+<label for="note">หมายเหตุ</label><textarea id="note" maxlength="500" placeholder="เช่น ต้องการห่อของขวัญ ระบุวันที่ต้องการรับ"></textarea>
+<div class="hp"><label>อย่ากรอกช่องนี้<input id="website" tabindex="-1" autocomplete="off"></label></div>
+<div class="sum"><span>ยอดสินค้า</span><b id="tot">-</b></div>
+<button class="btn solid" id="go" type="submit" style="width:100%;margin-top:22px">ส่งคำสั่งซื้อ</button>
+<div id="res"></div></form>
+<div class="note" id="notes"></div></div></section></main><div id="ftr"></div>
+<script src="assets/app.js"></script>
+<script>
+let P=[],S={};
+function total(){const p=P.find(x=>x.id===$("#pid").value),q=Math.max(1,parseInt($("#qty").value)||1);$("#tot").textContent=p?baht(p.price*q):"-";}
+function sync(){const id=$("#pid").value;$("#colorBox").hidden=id!=="ecrin";$("#engHint").textContent=id==="ecrin"?(S.engrave_note||""):"";total();}
+loadData().then(({products,settings:s})=>{
+ P=products;S=s;chrome(s,"o");
+ $("#pid").innerHTML=P.map(p=>'<option value="'+esc(p.id)+'"'+(p.stock<=0?" disabled":"")+'>'+esc(p.name)+' · '+esc(p.type)+' · '+baht(p.price)+(p.stock<=0?" (หมดชั่วคราว)":"")+'</option>').join("");
+ const want=new URLSearchParams(location.search).get("id");
+ if(want&&P.some(p=>p.id===want&&p.stock>0))$("#pid").value=want;
+ const c=[];
+ if(s.line_id)c.push('<a href="'+lineUrl(s.line_id)+'" target="_blank" rel="noopener"><small>แอดไลน์</small><b>'+esc(s.line_id)+'</b></a>');
+ if(s.phone)c.push('<a href="tel:'+esc(String(s.phone).replace(/[^0-9+]/g,""))+'"><small>โทรหาเรา</small><b>'+esc(s.phone)+'</b></a>');
+ $("#contact").innerHTML=c.join("");
+ $("#notes").innerHTML=[s.shipping_note,s.payment_note].filter(Boolean).map(t=>"<p>"+esc(t)+"</p>").join("");
+ sync();
+}).catch(e=>fail($("main"),e));
+$("#pid").onchange=sync;$("#qty").oninput=total;
+$("#f").addEventListener("submit",async ev=>{
+ ev.preventDefault();
+ const res=$("#res"),go=$("#go");res.innerHTML="";
+ const v=id=>$("#"+id).value.trim();
+ if(v("website"))return;
+ const qty=parseInt(v("qty"));
+ if(!v("nm")||!v("addr")||!(qty>=1)){res.innerHTML='<div class="msg err">กรุณากรอกชื่อ ที่อยู่ และจำนวนให้ครบ</div>';return;}
+ if(!/^[0-9+\- ]{9,15}$/.test(v("tel"))){res.innerHTML='<div class="msg err">เบอร์โทรศัพท์ไม่ถูกต้อง</div>';return;}
+ const p=P.find(x=>x.id===v("pid"));if(!p){res.innerHTML='<div class="msg err">กรุณาเลือกสินค้า</div>';return;}
+ let note=v("note");if(p.id==="ecrin")note=("สี: "+v("color")+(note?" | "+note:""));
+ const body={product:p.name+" ("+p.id+")",qty,name:v("nm"),phone:v("tel"),address:v("addr"),engrave:v("eng"),note};
+ go.disabled=true;go.textContent="กำลังส่ง...";
+ try{
+  if(!API_URL)throw new Error("ยังไม่ได้ตั้งค่า API_URL ใน assets/app.js");
+  const r=await fetch(API_URL,{method:"POST",body:JSON.stringify(body)});
+  const j=await r.json();
+  if(!j.ok)throw new Error(j.error||"ส่งไม่สำเร็จ");
+  $("#f").reset();sync();
+  res.innerHTML='<div class="msg ok">ได้รับคำสั่งซื้อเรียบร้อยแล้ว ขอบคุณครับ/ค่ะ ทีมงานจะติดต่อกลับเพื่อยืนยันและแจ้งช่องทางชำระเงิน</div>';
+ }catch(e){
+  res.innerHTML='<div class="msg err">ส่งคำสั่งซื้อไม่สำเร็จ ('+esc(e.message)+') กรุณาลองใหม่ หรือทักไลน์ '+esc(S.line_id||"")+' เพื่อสั่งซื้อโดยตรง</div>';
+ }
+ go.disabled=false;go.textContent="ส่งคำสั่งซื้อ";
+});
+</script></body></html>

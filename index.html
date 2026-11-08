@@ -1,0 +1,21 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0d0c0b"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500&family=Noto+Serif+Thai:wght@400;500&display=swap" rel="stylesheet"><link rel="stylesheet" href="assets/style.css"><title>ปากกาหรูคัดสรร 4 ด้าม</title><meta name="description" content="ปากกาคัดสรร 4 ด้าม งานฝีมือที่คุณจะอยากหยิบใช้ทุกวัน"></head>
+<body><div id="hdr"></div>
+<main>
+<div class="hero" id="hero"><div class="wrap fade">
+<div class="eyebrow">FINE WRITING INSTRUMENTS</div>
+<h1 id="ht"></h1><p id="hs"></p><a class="btn solid" id="hb" href="collection.html"></a></div></div>
+<section><div class="wrap"><div class="sec-h"><h2>คอลเลกชันของเรา</h2><div class="rule"></div></div><div class="grid" id="grid"><div class="state">กำลังโหลด...</div></div></div></section>
+<section class="story"><div class="wrap"><div class="cols">
+<div><h3>คัดสรรทีละด้าม</h3><p>เลือกเพียง 4 แบบ ที่เราอยากใช้เองทุกวัน</p></div>
+<div><h3>ของขวัญที่มีชื่อคุณ</h3><p>แกะชื่อหรืออักษรย่อด้วยเลเซอร์ ไทย/อังกฤษ</p></div>
+<div><h3>สั่งง่าย ดูแลถึงมือ</h3><p>กรอกฟอร์ม แล้วทีมงานติดต่อกลับเพื่อยืนยัน</p></div></div></div></section>
+</main><div id="ftr"></div>
+<script src="assets/app.js"></script>
+<script>
+loadData().then(({products,settings:s})=>{
+ chrome(s,"h");
+ $("#ht").textContent=s.hero_title||"";$("#hs").textContent=s.hero_subtitle||"";$("#hb").textContent=s.hero_button||"ดูคอลเลกชัน";
+ if(s.hero_image)$("#hero").style.backgroundImage='url("'+IMG_DIR+encodeURI(s.hero_image)+'")';
+ $("#grid").innerHTML=products.map(card).join("")||'<div class="state">ยังไม่มีสินค้า</div>';
+}).catch(e=>fail($("#grid"),e));
+</script></body></html>
